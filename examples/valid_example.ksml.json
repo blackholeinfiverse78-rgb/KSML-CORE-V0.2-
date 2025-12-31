@@ -1,0 +1,22 @@
+{
+    "ksml_version": "0.1.0",
+    "metadata": {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "author": "Antigravity",
+        "title": "Standard Valid Example",
+        "created_at": "2023-10-27T10:00:00Z"
+    },
+    "configurations": {
+        "max_retries": 3,
+        "timeout_seconds": 60
+    },
+    "steps": [
+        {
+            "name": "Validation Check",
+            "action": "validate_data",
+            "parameters": {
+                "target": "source_db"
+            }
+        }
+    ]
+}

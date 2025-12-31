@@ -1,0 +1,155 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://schemas.ksml.io/v0.1/ksml.json",
+    "title": "KSML Core v0.1",
+    "description": "Canonical Schema for the Kernel/Knowledge System Markup Language v0.1. Enforces strict determinism.",
+    "type": "object",
+    "required": [
+        "ksml_version",
+        "metadata",
+        "configurations",
+        "steps"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "ksml_version": {
+            "type": "string",
+            "const": "0.1.0",
+            "description": "Exact version of the KSML schema targeted by this document."
+        },
+        "metadata": {
+            "type": "object",
+            "required": [
+                "id",
+                "author",
+                "title",
+                "created_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Unique identifier for this document."
+                },
+                "author": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Creator of the document."
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Human-readable title."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional description of the document's purpose."
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "ISO 8601 creation timestamp."
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Optional taxonomy tags."
+                }
+            }
+        },
+        "configurations": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Global configuration settings for validation or execution limits.",
+            "properties": {
+                "max_retries": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "default": 3
+                },
+                "timeout_seconds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3600,
+                    "default": 60
+                }
+            }
+        },
+        "steps": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Ordered sequence of operational steps.",
+            "items": {
+                "$ref": "#/definitions/step"
+            }
+        }
+    },
+    "definitions": {
+        "step": {
+            "type": "object",
+            "required": [
+                "name",
+                "action",
+                "parameters"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Optional unique ID for the step."
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Human-readable name of the step."
+                },
+                "action": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]+$",
+                    "description": "The action verb to execute. Must be snake_case."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Details about what this step does."
+                },
+                "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Parameters for the action. Strictly validated.",
+                    "properties": {
+                        "target": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": [
+                                "string",
+                                "number",
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "options": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "on_failure": {
+                    "type": "string",
+                    "enum": [
+                        "stop",
+                        "continue",
+                        "retry"
+                    ],
+                    "default": "stop"
+                }
+            }
+        }
+    }
+}

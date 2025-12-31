@@ -1,0 +1,18 @@
+{
+    "ksml_version": "0.1.0",
+    "metadata": {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "author": "Antigravity",
+        "title": "Invalid Example",
+        "created_at": "2023-10-27T10:00:00Z"
+    },
+    "configurations": {},
+    "steps": [
+        {
+            "name": "Broken Step",
+            "action": "validate_data",
+            "parameters": {},
+            "unknown_field": "fail_me"
+        }
+    ]
+}

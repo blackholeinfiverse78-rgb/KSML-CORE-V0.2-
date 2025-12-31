@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KSML Validator Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #cccccc;
+            --panel-bg: #f9f9f9;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --button-bg: #007bff;
+            --button-text: #ffffff;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --border-color: #444444;
+            --panel-bg: #2d2d2d;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --button-bg: #0d6efd;
+            --button-text: #ffffff;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--panel-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .theme-toggle {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            background: var(--panel-bg);
+        }
+        
+        .editor-container {
+            height: 400px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .CodeMirror {
+            height: 100%;
+            font-size: 14px;
+        }
+        
+        .controls {
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background: var(--button-bg);
+            color: var(--button-text);
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+        
+        button:hover {
+            opacity: 0.8;
+        }
+        
+        .valid {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .invalid {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+        
+        .error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid var(--error-color);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+        }
+        
+        .history {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        
+        .history-item {
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .history-item:hover {
+            border-color: var(--border-color);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-color);
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--button-bg);
+        }
+        
+        .batch-section {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>KSML Validator Pro v0.1</h1>
+            <div>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+                <button onclick="showStats()">📊 Stats</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="panel">
+                <h3>📝 KSML Document Editor</h3>
+                <div class="editor-container">
+                    <textarea id="editor"></textarea>
+                </div>
+                
+                <div class="controls">
+                    <button onclick="validate()">✅ Validate</button>
+                    <button onclick="loadExample('valid')">📄 Valid Example</button>
+                    <button onclick="loadExample('invalid')">❌ Invalid Example</button>
+                    <button onclick="loadRandomSample()">🎲 Random Sample</button>
+                    <button onclick="clearEditor()">🗑️ Clear</button>
+                    <button onclick="formatJSON()">🎨 Format</button>
+                </div>
+                
+                <div class="batch-section">
+                    <h4>🔄 Batch Validation</h4>
+                    <button onclick="validateBatch()">Validate Multiple Documents</button>
+                    <button onclick="exportResults('json')">📥 Export JSON</button>
+                    <button onclick="exportResults('csv')">📥 Export CSV</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>📋 Validation Results</h3>
+                <div id="result"></div>
+                
+                <div class="stats" id="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-validations">0</div>
+                        <div>Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="valid-count">0</div>
+                        <div>Valid</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="invalid-count">0</div>
+                        <div>Invalid</div>
+                    </div>
+                </div>
+                
+                <h4>📚 Validation History</h4>
+                <div class="history" id="history"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize CodeMirror
+        let editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+            mode: 'application/json',
+            theme: 'default',
+            lineNumbers: true,
+            autoCloseBrackets: true,
+            matchBrackets: true,
+            indentUnit: 2,
+            tabSize: 2,
+            lineWrapping: true
+        });
+        
+        // Set initial content
+        editor.setValue(`{
+  "ksml_version": "0.1.0",
+  "metadata": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "author": "Test User",
+    "title": "Sample Document",
+    "created_at": "2023-01-01T00:00:00Z"
+  },
+  "configurations": {},
+  "steps": [
+    {
+      "name": "Sample Step",
+      "action": "test_action",
+      "parameters": {}
+    }
+  ]
+}`);
+        
+        // Validation history and stats
+        let validationHistory = JSON.parse(localStorage.getItem('ksml_history') || '[]');
+        let validationStats = JSON.parse(localStorage.getItem('ksml_stats') || '{"total": 0, "valid": 0, "invalid": 0}');
+        
+        // Update stats display
+        function updateStats() {
+            document.getElementById('total-validations').textContent = validationStats.total;
+            document.getElementById('valid-count').textContent = validationStats.valid;
+            document.getElementById('invalid-count').textContent = validationStats.invalid;
+        }
+        
+        // Update history display
+        function updateHistory() {
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = '';
+            
+            validationHistory.slice(-10).reverse().forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div style="font-weight: bold; color: ${item.valid ? 'var(--success-color)' : 'var(--error-color)'}">
+                        ${item.valid ? '✅' : '❌'} ${item.title || 'Untitled'}
+                    </div>
+                    <div style="font-size: 12px; opacity: 0.7">${new Date(item.timestamp).toLocaleString()}</div>
+                `;
+                div.onclick = () => {
+                    editor.setValue(JSON.stringify(item.document, null, 2));
+                };
+                historyDiv.appendChild(div);
+            });
+        }
+        
+        // Theme toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            editor.setOption('theme', newTheme === 'dark' ? 'monokai' : 'default');
+            
+            const button = document.querySelector('.theme-toggle');
+            button.textContent = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+            
+            localStorage.setItem('ksml_theme', newTheme);
+        }
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('ksml_theme') || 'light';
+        if (savedTheme === 'dark') {
+            toggleTheme();
+        }
+        
+        // Validation function
+        async function validate() {
+            const input = editor.getValue();
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const doc = JSON.parse(input);
+                const response = await fetch('/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(doc)
+                });
+                
+                const result = await response.json();
+                displayResult(result);
+                
+                // Update history and stats
+                const historyItem = {
+                    document: doc,
+                    result: result,
+                    valid: result.valid,
+                    title: doc.metadata?.title || 'Untitled',
+                    timestamp: new Date().toISOString()
+                };
+                
+                validationHistory.push(historyItem);
+                if (validationHistory.length > 50) {
+                    validationHistory = validationHistory.slice(-50);
+                }
+                
+                validationStats.total++;
+                if (result.valid) {
+                    validationStats.valid++;
+                } else {
+                    validationStats.invalid++;
+                }
+                
+                localStorage.setItem('ksml_history', JSON.stringify(validationHistory));
+                localStorage.setItem('ksml_stats', JSON.stringify(validationStats));
+                
+                updateStats();
+                updateHistory();
+                
+            } catch (e) {
+                resultDiv.innerHTML = `<div class="error">JSON Parse Error: ${e.message}</div>`;
+            }
+        }
+        
+        function displayResult(result) {
+            const resultDiv = document.getElementById('result');
+            const status = result.valid ? 'VALID' : 'INVALID';
+            const statusClass = result.valid ? 'valid' : 'invalid';
+            
+            let html = `<h4 class="${statusClass}">Status: ${status}</h4>`;
+            
+            if (result.errors && result.errors.length > 0) {
+                html += '<h5>Errors:</h5>';
+                result.errors.forEach(error => {
+                    html += `<div class="error">
+                        <strong>${error.code}</strong>: ${error.message}<br>
+                        <small>Path: ${error.path} | Severity: ${error.severity}</small>
+                    </div>`;
+                });
+            }
+            
+            resultDiv.innerHTML = html;
+        }
+        
+        // Batch validation
+        async function validateBatch() {
+            const docs = prompt('Enter number of documents to validate (max 10):');
+            if (!docs || docs > 10) return;
+            
+            const documents = [];
+            for (let i = 0; i < docs; i++) {
+                documents.push(JSON.parse(editor.getValue()));
+            }
+            
+            try {
+                const response = await fetch('/validate/batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ documents })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <h4>Batch Results</h4>
+                    <p>Valid: ${result.summary.valid}, Invalid: ${result.summary.invalid}, Errors: ${result.summary.errors}</p>
+                `;
+            } catch (e) {
+                console.error('Batch validation failed:', e);
+            }
+        }
+        
+        // Export results
+        async function exportResults(format) {
+            try {
+                const response = await fetch(`/export/${format}`);
+                const result = await response.json();
+                
+                const blob = new Blob([result.content], { type: result.media_type });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ksml_results.${format}`;
+                a.click();
+            } catch (e) {
+                console.error('Export failed:', e);
+            }
+        }
+        
+        // Utility functions
+        function clearEditor() {
+            editor.setValue('');
+        }
+        
+        function formatJSON() {
+            try {
+                const formatted = JSON.stringify(JSON.parse(editor.getValue()), null, 2);
+                editor.setValue(formatted);
+            } catch (e) {
+                alert('Invalid JSON - cannot format');
+            }
+        }
+        
+        function showStats() {
+            alert(`Validation Statistics:
+Total: ${validationStats.total}
+Valid: ${validationStats.valid}
+Invalid: ${validationStats.invalid}
+Success Rate: ${validationStats.total > 0 ? Math.round((validationStats.valid / validationStats.total) * 100) : 0}%`);
+        }
+        
+        // Load examples (same as before but with editor)
+        function loadExample(type) {
+            const examples = {
+                valid: {
+                    "ksml_version": "0.1.0",
+                    "metadata": {
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
+                        "author": "Example User",
+                        "title": "Valid Example",
+                        "created_at": "2023-01-01T00:00:00Z"
+                    },
+                    "configurations": {},
+                    "steps": [{
+                        "name": "Example Step",
+                        "action": "example_action",
+                        "parameters": { "target": "test" }
+                    }]
+                },
+                invalid: {
+                    "ksml_version": "0.1.0",
+                    "metadata": {
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
+                        "author": "Example User",
+                        "title": "Invalid Example",
+                        "created_at": "2023-01-01T00:00:00Z"
+                    },
+                    "configurations": {},
+                    "steps": [{
+                        "name": "Broken Step",
+                        "parameters": {},
+                        "unknown_field": "not_allowed"
+                    }]
+                }
+            };
+            
+            editor.setValue(JSON.stringify(examples[type], null, 2));
+        }
+        
+        // Random sample function (simplified for space)
+        function loadRandomSample() {
+            const samples = [
+                {
+                    "ksml_version": "0.1.0",
+                    "metadata": {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "author": "DevOps Team",
+                        "title": "Database Migration",
+                        "created_at": "2024-01-15T09:30:00Z"
+                    },
+                    "configurations": { "max_retries": 3, "timeout_seconds": 300 },
+                    "steps": [{ "name": "Backup Database", "action": "backup_db", "parameters": { "target": "prod-db-01", "value": "full_backup" } }]
+                }
+            ];
+            
+            const randomIndex = Math.floor(Math.random() * samples.length);
+            editor.setValue(JSON.stringify(samples[randomIndex], null, 2));
+        }
+        
+        // Initialize
+        updateStats();
+        updateHistory();
+    </script>
+</body>
+</html>

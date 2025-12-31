@@ -1,0 +1,43 @@
+{
+    "ksml_version": "0.1.0",
+    "metadata": {
+        "id": "123e4567-e89b-12d3-a456-426614174999",
+        "author": "PowerUser",
+        "title": "Complex Workflow",
+        "description": "Uses all optional fields",
+        "created_at": "2023-12-31T23:59:59Z",
+        "tags": [
+            "prod",
+            "complex",
+            "v1"
+        ]
+    },
+    "configurations": {
+        "max_retries": 10,
+        "timeout_seconds": 3600
+    },
+    "steps": [
+        {
+            "id": "step-1",
+            "name": "Detailed Step",
+            "action": "process_data",
+            "description": "Processing logic",
+            "parameters": {
+                "target": "warehouse",
+                "value": 42,
+                "options": {
+                    "mode": "async",
+                    "priority": "high"
+                }
+            },
+            "on_failure": "retry"
+        },
+        {
+            "name": "Final Step",
+            "action": "notify",
+            "parameters": {
+                "value": null
+            }
+        }
+    ]
+}
