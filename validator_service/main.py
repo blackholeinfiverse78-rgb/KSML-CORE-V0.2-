@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from typing import List, Optional, Any, Dict
 import json
 import os
@@ -148,7 +148,8 @@ class ValidationResult(BaseModel):
 class BatchValidationRequest(BaseModel):
     documents: List[dict]
     
-    @validator('documents')
+    @field_validator('documents')
+    @classmethod
     def validate_batch_size(cls, v):
         if len(v) > 10:
             raise ValueError('Maximum 10 documents per batch')
