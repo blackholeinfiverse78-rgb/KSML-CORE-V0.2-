@@ -23,5 +23,18 @@ KSML_RULES = {
     "KSML_200": (Severity.WARNING, "Deprecated feature used: {details}"),
 }
 
+# v0.2 Additional Rules
+KSML_V2_RULES = {
+    # v0.2 Safety and Extensions
+    "KSML_004": (Severity.ERROR, "Safety limit exceeded: {details}"),
+    "KSML_005": (Severity.ERROR, "Invalid extension configuration: {details}"),
+    "KSML_006": (Severity.ERROR, "Malformed dependency specification: {details}"),
+    "KSML_007": (Severity.WARNING, "Deprecated v0.2 feature used: {details}"),
+}
+
 def get_rule(code):
     return KSML_RULES.get(code, (Severity.ERROR, "Unknown Error"))
+
+def get_rule_v2(code):
+    """Get rule from v0.2 rules or fall back to v0.1 rules"""
+    return KSML_V2_RULES.get(code, get_rule(code))

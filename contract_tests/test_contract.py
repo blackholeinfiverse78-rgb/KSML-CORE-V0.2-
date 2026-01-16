@@ -57,4 +57,4 @@ def test_schema_endpoint():
     response = client.get("/schema")
     assert response.status_code == 200
     schema = response.json()
-    assert schema["$id"] == "https://schemas.ksml.io/v0.1/ksml.json"
+    assert schema["$id"] == "https://schemas.ksml.io/v0.2/ksml.json"

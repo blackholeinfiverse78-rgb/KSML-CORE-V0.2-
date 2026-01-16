@@ -34,12 +34,13 @@ def test_examples(filename):
     assert response.status_code == 200
     res = response.json()
     
-    if "valid_" in filename:
+    if filename.startswith("valid_"):
         assert res["valid"] is True, f"{filename} should be valid but failed: {res.get('errors')}"
-    elif "invalid_" in filename:
-        print(f"DEBUG RESPONSE for {filename}: {res}")
+    elif filename.startswith("invalid_"):
+        # print(f"DEBUG RESPONSE for {filename}: {res}")
         assert res["valid"] is False, f"{filename} should be invalid but passed."
         assert len(res["errors"]) > 0
+
 
 def test_determinism():
     """

@@ -1,0 +1,263 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://schemas.ksml.io/v0.2/ksml.json",
+    "title": "KSML Core v0.2",
+    "description": "Canonical Schema for the Kernel/Knowledge System Markup Language v0.2. Enforces strict determinism and zero silent failures.",
+    "type": "object",
+    "required": [
+        "ksml_version",
+        "metadata",
+        "configurations",
+        "steps"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "ksml_version": {
+            "type": "string",
+            "enum": [
+                "0.1.0",
+                "0.2.0"
+            ],
+            "description": "Exact version of the KSML schema targeted by this document."
+        },
+        "metadata": {
+            "type": "object",
+            "required": [
+                "id",
+                "author",
+                "title",
+                "created_at"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Unique identifier for this document."
+                },
+                "author": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Creator of the document."
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Human-readable title."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional description of the document's purpose."
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "ISO 8601 creation timestamp."
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Optional taxonomy tags."
+                },
+                "version": {
+                    "type": "string",
+                    "description": "Optional semantic version of the document content itself."
+                },
+                "environment": {
+                    "type": "string",
+                    "enum": [
+                        "production",
+                        "staging",
+                        "development",
+                        "test"
+                    ],
+                    "description": "Intended deployment environment."
+                },
+                "dependencies": {
+                    "type": "array",
+                    "description": "External resources this document relies upon.",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "name",
+                            "source"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "version": {
+                                "type": "string"
+                            },
+                            "hash": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "configurations": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Global configuration settings for validation or execution limits.",
+            "properties": {
+                "max_retries": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "default": 3
+                },
+                "timeout_seconds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3600,
+                    "default": 60
+                }
+            }
+        },
+        "capabilities": {
+            "type": "object",
+            "description": "Optional declaration of required capabilities or feature flags.",
+            "additionalProperties": false,
+            "properties": {
+                "features": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "uniqueItems": true
+                }
+            }
+        },
+        "extensions": {
+            "type": "object",
+            "description": "Vendor-specific extensions. Must use 'x-' prefix.",
+            "patternProperties": {
+                "^x-[a-z0-9_\\-]+$": {}
+            },
+            "additionalProperties": false
+        },
+        "steps": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Ordered sequence of operational steps.",
+            "items": {
+                "$ref": "#/definitions/step"
+            }
+        }
+    },
+    "definitions": {
+        "step": {
+            "type": "object",
+            "required": [
+                "name",
+                "action",
+                "parameters"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Optional unique ID for the step."
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Human-readable name of the step."
+                },
+                "action": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]+$",
+                    "description": "The action verb to execute. Must be snake_case."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Details about what this step does."
+                },
+                "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Parameters for the action. Strictly validated.",
+                    "properties": {
+                        "target": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": [
+                                "string",
+                                "number",
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "options": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "on_failure": {
+                    "type": "string",
+                    "enum": [
+                        "stop",
+                        "continue",
+                        "retry"
+                    ],
+                    "default": "stop"
+                },
+                "timeout_override": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3600,
+                    "description": "Step-specific timeout override in seconds."
+                },
+                "retry_policy": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "max_attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5
+                        },
+                        "backoff_seconds": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 60
+                        }
+                    }
+                },
+                "conditions": {
+                    "type": "array",
+                    "description": "Pre-conditions for step execution.",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "expression"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                            "type": {
+                                "type": "string"
+                            },
+                            "expression": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
