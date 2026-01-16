@@ -25,7 +25,7 @@ class TimelineVerifier:
         """Check if JSON file is valid"""
         try:
             full_path = self.base_path / path
-            with open(full_path, 'r') as f:
+            with open(full_path, 'r', encoding="utf-8") as f:
                 json.load(f)
             self.results.append((description, True, path))
             return True

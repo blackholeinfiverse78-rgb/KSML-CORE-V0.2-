@@ -13,7 +13,7 @@ EXAMPLES_DIR = Path(__file__).parent.parent / "examples"
 INVALID_EX = EXAMPLES_DIR / "valid_example.ksml.json"
 
 print(f"Loading {INVALID_EX}")
-with open(INVALID_EX, "r") as f:
+with open(INVALID_EX, "r", encoding="utf-8") as f:
     data = json.load(f)
 
 print("Sending request...")

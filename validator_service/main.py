@@ -135,7 +135,7 @@ def load_schema(schema_path: Path):
         if cache_key in schema_cache:
             return schema_cache[cache_key]
         
-        with open(schema_path, "r") as f:
+        with open(schema_path, "r", encoding="utf-8") as f:
             schema = json.load(f)
             schema_cache[cache_key] = schema  # Cache the schema
             logger.info(f"Schema loaded and cached from {schema_path}")

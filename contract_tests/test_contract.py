@@ -14,7 +14,7 @@ client = TestClient(app)
 EXAMPLES_DIR = Path(__file__).parent.parent / "examples"
 
 def load_json(path):
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 @pytest.mark.parametrize("filename", [f for f in os.listdir(EXAMPLES_DIR) if f.endswith(".json")])
